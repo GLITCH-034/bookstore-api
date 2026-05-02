@@ -1,3 +1,0 @@
-/home/lenovo_unix/bookstore/build/CMakeFiles/bookstore_api.dir
-/home/lenovo_unix/bookstore/build/CMakeFiles/edit_cache.dir
-/home/lenovo_unix/bookstore/build/CMakeFiles/rebuild_cache.dir

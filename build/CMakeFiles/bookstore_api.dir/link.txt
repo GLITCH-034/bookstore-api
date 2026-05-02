@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/bookstore_api.dir/main.cpp.o -o bookstore_api  /usr/lib/x86_64-linux-gnu/libcurl.so /usr/lib/x86_64-linux-gnu/libsqlite3.so -lpthread 
