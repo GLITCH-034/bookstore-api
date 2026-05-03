@@ -269,8 +269,15 @@ int main() {
 
     // ── Health Check ────────────────────────────────────────
     CROW_ROUTE(app, "/")([]{
-        return crow::response(200, R"({"status":"BookStore API running"})");
-    });
+    std::ifstream file("Khazar_Library_connected.html");
+    if (!file.is_open())
+        return crow::response(404, "Frontend not found");
+    std::string content((std::istreambuf_iterator<char>(file)),
+                         std::istreambuf_iterator<char>());
+    crow::response res(200, content);
+    res.set_header("Content-Type", "text/html");
+    return res;
+});
 
     // ── USERS ───────────────────────────────────────────────
 
