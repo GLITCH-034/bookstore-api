@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khazar Library Digital Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8; --bg2: #ede8dc; --surface: #fff8f0;
+    --text: #1a1208; --text2: #5c4a2a;
+    --accent: #b5461e; --accent2: #d4873a;
+    --border: rgba(90,60,20,0.15); --shadow: rgba(90,50,10,0.18);
+    --shelf: #8b6540; --shelf-dark: #5c4020;
+    --card-bg: #fff8f0; --tag-bg: rgba(181,70,30,0.1); --tag-text: #b5461e;
+    --search-bg: #fff8f0;
+    --xp-bar: #27ae60; --level-bg: #f0fff4;
+  }
+  [data-theme="night"] {
+    --bg: #0f0c07; --bg2: #1a1510; --surface: #221c12;
+    --text: #f0e6cc; --text2: #a89060;
+    --accent: #e8905a; --accent2: #f0b870;
+    --border: rgba(200,160,80,0.12); --shadow: rgba(0,0,0,0.5);
+    --shelf: #4a3020; --shelf-dark: #2a1a08;
+    --card-bg: #1e1810; --tag-bg: rgba(232,144,90,0.15); --tag-text: #e8905a;
+    --search-bg: #1e1810;
+    --xp-bar: #2ecc71; --level-bg: #0a1f0f;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.5s, color 0.5s; overflow-x: hidden; }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between;
+    height: 64px; transition: background 0.5s; gap: 1rem;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .logo-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+  nav { display: flex; align-items: center; gap: 1.2rem; }
+  nav a { font-size: 0.85rem; font-weight: 500; color: var(--text2); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
+  nav a:hover { color: var(--accent); }
+
+  /* XP BAR in header */
+  .header-xp {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--level-bg); border: 1px solid var(--border);
+    border-radius: 50px; padding: 4px 12px; white-space: nowrap;
+    transition: background 0.5s;
+  }
+  .xp-level-badge {
+    font-size: 0.7rem; font-weight: 700; color: var(--xp-bar);
+    background: rgba(39,174,96,0.15); border-radius: 50px;
+    padding: 2px 7px; letter-spacing: 0.05em;
+  }
+  .xp-track { width: 70px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .xp-fill { height: 100%; background: var(--xp-bar); border-radius: 3px; transition: width 0.6s cubic-bezier(.25,.8,.25,1); }
+  .xp-label { font-size: 0.68rem; color: var(--text2); }
+
+  .theme-btn { width: 44px; height: 26px; border-radius: 13px; border: 1.5px solid var(--border); background: var(--bg2); cursor: pointer; position: relative; transition: background 0.4s; flex-shrink: 0; }
+  .theme-btn::after { content: ''; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); position: absolute; top: 3px; left: 3px; transition: left 0.35s cubic-bezier(.4,0,.2,1), background 0.4s; }
+  [data-theme="night"] .theme-btn::after { left: 19px; }
+
+  /* ── DISCOUNT BANNER ── */
+  .discount-banner {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    color: #fff; text-align: center; padding: 8px 1rem;
+    font-size: 0.82rem; font-weight: 500;
+    display: none; align-items: center; justify-content: center; gap: 8px;
+  }
+  .discount-banner.show { display: flex; }
+
+  /* ── HERO ── */
+  .hero { text-align: center; padding: 3.5rem 2rem 2rem; animation: fadeUp 0.7s ease both; }
+  .hero-eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 5.5vw, 4rem); font-weight: 700; line-height: 1.1; margin-bottom: 1rem; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p { font-size: 1rem; color: var(--text2); max-width: 480px; margin: 0 auto 2rem; line-height: 1.6; }
+
+  /* TYPE FILTER */
+  .type-filter { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+  .type-btn {
+    padding: 5px 16px; border-radius: 50px;
+    border: 1.5px solid var(--border); background: transparent;
+    color: var(--text2); font-size: 0.78rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .type-btn.active, .type-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* SEARCH */
+  .search-wrap { max-width: 540px; margin: 0 auto 0.75rem; position: relative; }
+  .search-wrap input { width: 100%; padding: 0.85rem 3rem 0.85rem 1.25rem; border-radius: 50px; border: 1.5px solid var(--border); background: var(--search-bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; box-shadow: 0 2px 16px var(--shadow); transition: border-color 0.2s, background 0.5s; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text2); opacity: 0.6; }
+  .search-icon { position: absolute; right: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--text2); pointer-events: none; }
+
+  /* GENRE TAGS */
+  .genres { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 600px; margin: 0.75rem auto 0; }
+  .genre-tag { padding: 5px 14px; border-radius: 50px; background: var(--tag-bg); color: var(--tag-text); font-size: 0.78rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; user-select: none; }
+  .genre-tag:hover, .genre-tag.active { background: var(--accent); color: #fff; }
+
+  /* ── CAROUSEL ── */
+  .carousel-section { padding: 3rem 0 0; animation: fadeUp 0.7s 0.15s ease both; }
+  .carousel-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 400; font-style: italic; color: var(--text2); margin-bottom: 2rem; }
+  .carousel-3d { perspective: 1100px; height: 300px; display: flex; align-items: center; justify-content: center; position: relative; cursor: grab; user-select: none; }
+  .carousel-3d:active { cursor: grabbing; }
+  .books-stage { position: relative; width: 150px; height: 230px; transform-style: preserve-3d; transition: transform 0.65s cubic-bezier(.25,.8,.25,1); }
+  .book-item { position: absolute; width: 150px; height: 230px; transform-style: preserve-3d; cursor: pointer; }
+  .book-front { width: 150px; height: 230px; border-radius: 3px 8px 8px 3px; overflow: hidden; box-shadow: 5px 5px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem 0.9rem; text-align: center; position: relative; transition: box-shadow 0.3s; }
+  .book-front::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: linear-gradient(to right, rgba(0,0,0,0.3), transparent); border-radius: 3px 0 0 3px; }
+  .book-title { font-family: 'Playfair Display', serif; font-size: 0.88rem; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 0.5rem; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .book-author { font-size: 0.68rem; color: rgba(255,255,255,0.75); font-style: italic; }
+  .book-deco { width: 28px; height: 1.5px; background: rgba(255,255,255,0.4); margin: 0.5rem auto; }
+  .book-badge { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(255,255,255,0.18); color: #fff; padding: 2px 8px; border-radius: 50px; margin-top: 0.4rem; }
+  .book-type-tag { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0,0,0,0.25); color: #fff; padding: 2px 6px; border-radius: 3px; margin-top: 3px; }
+
+  /* SHELF */
+  .shelf-wrap { max-width: 860px; margin: 2rem auto 0; padding: 0 2rem; }
+  .shelf-board { height: 14px; background: linear-gradient(to bottom, var(--shelf), var(--shelf-dark)); box-shadow: 0 4px 10px var(--shadow); border-radius: 2px; }
+
+  /* ARROWS */
+  .carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 42px; height: 42px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--border); box-shadow: 0 2px 10px var(--shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; color: var(--text); transition: all 0.2s; user-select: none; }
+  .carousel-arrow:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .arrow-left { left: max(1rem, calc(50% - 200px)); }
+  .arrow-right { right: max(1rem, calc(50% - 200px)); }
+
+  /* DOTS */
+  .carousel-dots { display: flex; gap: 8px; justify-content: center; margin-top: 1.5rem; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); cursor: pointer; transition: all 0.3s; }
+  .dot.active { width: 20px; border-radius: 3px; background: var(--accent); }
+
+  /* BOOK INFO */
+  .active-book-info { text-align: center; padding: 1.5rem 1rem 0; }
+  .active-book-info h3 { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--text); margin-bottom: 0.25rem; }
+  .active-book-info .by { font-size: 0.875rem; color: var(--text2); font-style: italic; }
+  .active-book-info .desc { font-size: 0.875rem; color: var(--text2); max-width: 400px; margin: 0.65rem auto 0; line-height: 1.65; }
+  .read-btn { display: inline-block; margin-top: 1rem; padding: 0.6rem 1.6rem; background: var(--accent); color: #fff; border-radius: 50px; font-size: 0.85rem; font-weight: 500; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; font-family: 'DM Sans', sans-serif; }
+  .read-btn:hover { background: var(--accent2); transform: scale(1.04); }
+  .buy-btn { display: inline-block; margin-top: 1rem; margin-left: 0.5rem; padding: 0.6rem 1.6rem; background: #27ae60; color: #fff; border-radius: 50px; font-size: 0.85rem; font-weight: 500; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; font-family: 'DM Sans', sans-serif; }
+  .buy-btn:hover { background: #2ecc71; transform: scale(1.04); }
+
+  /* ── GRID ── */
+  .grid-section { padding: 3rem 2rem 4rem; max-width: 1100px; margin: 0 auto; animation: fadeUp 0.7s 0.25s ease both; }
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.5rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; }
+  .see-all { font-size: 0.8rem; color: var(--accent); cursor: pointer; font-weight: 500; }
+  .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; }
+  .book-card { cursor: pointer; transition: transform 0.25s; }
+  .book-card:hover { transform: translateY(-5px); }
+  .book-card-cover { width: 100%; aspect-ratio: 2/3; border-radius: 3px 8px 8px 3px; overflow: hidden; position: relative; box-shadow: 4px 4px 14px var(--shadow); transition: box-shadow 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 1rem; text-align: center; }
+  .book-card:hover .book-card-cover { box-shadow: 6px 8px 24px var(--shadow); }
+  .book-card-cover::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: linear-gradient(to right, rgba(0,0,0,0.28), transparent); }
+  .bcc-title { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 700; color: #fff; line-height: 1.3; text-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+  .bcc-deco { width: 18px; height: 1.5px; background: rgba(255,255,255,0.45); margin: 0.4rem auto; }
+  .bcc-author { font-size: 0.6rem; color: rgba(255,255,255,0.7); font-style: italic; }
+  .bcc-type { font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0,0,0,0.3); color: rgba(255,255,255,0.9); padding: 1px 5px; border-radius: 2px; margin-top: 4px; }
+  .book-card-meta { padding: 0.6rem 0.2rem 0; }
+  .book-card-name { font-size: 0.82rem; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .book-card-author { font-size: 0.7rem; color: var(--text2); margin-top: 2px; font-style: italic; }
+  .book-card-genre { font-size: 0.65rem; color: var(--tag-text); margin-top: 3px; }
+  .no-results { text-align: center; padding: 3rem 1rem; color: var(--text2); font-style: italic; display: none; }
+
+  /* ── AI RECOMMENDATIONS ── */
+  .ai-rec-section { max-width: 1100px; margin: 0 auto; padding: 0 2rem 3rem; }
+  .ai-rec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ai-rec-header h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
+  .ai-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; padding: 3px 10px; border-radius: 50px; }
+  .ai-rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+  .ai-rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; transition: all 0.2s; }
+  .ai-rec-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
+  .ai-rec-mini { width: 42px; height: 62px; border-radius: 2px 5px 5px 2px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); }
+  .ai-rec-mini::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: rgba(0,0,0,0.25); }
+  .ai-rec-info h4 { font-size: 0.8rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 2px; }
+  .ai-rec-info p { font-size: 0.7rem; color: var(--text2); font-style: italic; }
+  .ai-rec-reason { font-size: 0.65rem; color: var(--accent); margin-top: 4px; }
+  .ai-rec-placeholder { text-align: center; padding: 2rem; color: var(--text2); font-size: 0.875rem; }
+  .ai-rec-btn { margin-top: 1rem; padding: 0.55rem 1.4rem; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 50px; font-size: 0.82rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s, transform 0.15s; }
+  .ai-rec-btn:hover { opacity: 0.88; transform: scale(1.03); }
+  .ai-rec-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border-radius: 16px; max-width: 520px; width: 100%; padding: 2rem; position: relative; transform: translateY(20px); transition: transform 0.3s, background 0.5s; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-close { position: absolute; top: 1rem; right: 1rem; background: var(--bg2); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .modal-close:hover { background: var(--accent); color: #fff; }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--text); margin-bottom: 0.2rem; }
+  .modal-author { font-size: 0.85rem; color: var(--text2); font-style: italic; margin-bottom: 0.75rem; }
+  .modal-genre-pill { display: inline-block; padding: 3px 12px; border-radius: 50px; background: var(--tag-bg); color: var(--tag-text); font-size: 0.72rem; font-weight: 500; margin-bottom: 0.4rem; }
+  .modal-type-pill { display: inline-block; padding: 3px 12px; border-radius: 50px; background: rgba(102,126,234,0.12); color: #667eea; font-size: 0.72rem; font-weight: 500; margin-left: 4px; margin-bottom: 0.4rem; }
+  .modal-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.7; margin-bottom: 1rem; }
+  .modal-cover { width: 74px; height: 110px; border-radius: 3px 6px 6px 3px; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0.6rem; text-align: center; box-shadow: 4px 4px 14px rgba(0,0,0,0.25); position: relative; flex-shrink: 0; }
+  .modal-cover::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 9px; background: linear-gradient(to right, rgba(0,0,0,0.28), transparent); }
+
+  /* DRM READER */
+  .drm-reader { background: var(--bg2); border-radius: 12px; padding: 1.25rem; margin-top: 1rem; position: relative; border: 1px solid var(--border); }
+  .drm-watermark { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0.07; font-size: 1.1rem; font-weight: 700; color: var(--text); transform: rotate(-30deg); letter-spacing: 0.1em; white-space: nowrap; overflow: hidden; }
+  .drm-content { font-size: 0.875rem; color: var(--text2); line-height: 1.8; font-style: italic; position: relative; z-index: 1; }
+  .drm-label { font-size: 0.65rem; color: var(--text2); margin-top: 0.5rem; opacity: 0.7; display: flex; align-items: center; gap: 4px; }
+
+  /* PURCHASE AREA */
+  .purchase-area { margin-top: 1rem; padding: 1rem; background: var(--level-bg); border-radius: 10px; border: 1px solid var(--border); }
+  .price-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .price { font-size: 1.3rem; font-weight: 700; color: var(--accent); font-family: 'Playfair Display', serif; }
+  .price-discount { font-size: 0.8rem; color: #27ae60; background: rgba(39,174,96,0.12); padding: 2px 8px; border-radius: 50px; font-weight: 600; }
+  .purchase-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  /* XP TOAST */
+  .xp-toast { position: fixed; bottom: 5rem; right: 1.5rem; background: #27ae60; color: #fff; padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; z-index: 9999; transform: translateY(20px); opacity: 0; transition: all 0.4s; pointer-events: none; box-shadow: 0 4px 16px rgba(39,174,96,0.4); }
+  .xp-toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── CHATBOT ── */
+  .chat-fab { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 300; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; cursor: pointer; color: #fff; font-size: 1.4rem; box-shadow: 0 4px 20px rgba(102,126,234,0.5); transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; }
+  .chat-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(102,126,234,0.6); }
+  .chat-panel { position: fixed; bottom: 5rem; right: 1.5rem; z-index: 299; width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 40px var(--shadow); display: flex; flex-direction: column; transform: scale(0.92) translateY(20px); transform-origin: bottom right; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(.25,.8,.25,1); max-height: 460px; }
+  .chat-panel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+  .chat-header { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .chat-header-info { display: flex; align-items: center; gap: 8px; }
+  .chat-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+  .chat-header h4 { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+  .chat-header p { font-size: 0.68rem; color: #27ae60; }
+  .chat-close-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1rem; padding: 2px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 0.875rem; display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
+  .chat-msg { max-width: 82%; padding: 7px 11px; border-radius: 12px; font-size: 0.82rem; line-height: 1.5; }
+  .chat-msg.bot { background: var(--bg2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .chat-msg.user { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+  .chat-msg.typing { color: var(--text2); font-style: italic; }
+  .chat-input-row { display: flex; gap: 6px; padding: 0.75rem; border-top: 1px solid var(--border); }
+  .chat-input-row input { flex: 1; padding: 7px 12px; border-radius: 50px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; outline: none; }
+  .chat-input-row input:focus { border-color: #667eea; }
+  .chat-send { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); border: none; cursor: pointer; color: #fff; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* LEVEL UP MODAL */
+  .levelup-overlay { position: fixed; inset: 0; z-index: 9998; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .levelup-overlay.show { opacity: 1; pointer-events: all; }
+  .levelup-box { background: var(--surface); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; max-width: 320px; box-shadow: 0 20px 60px rgba(39,174,96,0.3); animation: popIn 0.4s cubic-bezier(.25,.8,.25,1); border: 2px solid #27ae60; }
+  .levelup-box h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #27ae60; margin: 0.5rem 0; }
+  .levelup-box p { color: var(--text2); font-size: 0.9rem; }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* WISHLIST HEART BUTTON */
+  .wl-fab {
+    position: relative; background: none; border: none;
+    font-size: 1.4rem; cursor: pointer; color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  .wl-fab:hover { transform: scale(1.2); background: var(--tag-bg); }
+  .wl-fab .wishlist-count {
+    position: absolute; top: -2px; right: -2px;
+    background: var(--accent); color: #fff;
+    font-size: 0.55rem; font-weight: 700;
+    min-width: 14px; height: 14px; border-radius: 50px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3px;
+    opacity: 0; transform: scale(0); transition: all 0.25s;
+  }
+  .wl-fab .wishlist-count.show { opacity: 1; transform: scale(1); }
+
+  /* WISHLIST TAB */
+  .nav-wishlist { position: relative; cursor: pointer; }
+  .wishlist-count {
+    position: absolute; top: -6px; right: -10px;
+    background: var(--accent); color: #fff;
+    font-size: 0.6rem; font-weight: 700;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: scale(0); transition: all 0.25s;
+  }
+  .wishlist-count.show { opacity: 1; transform: scale(1); }
+  .wishlist-section { max-width: 1100px; margin: 0 auto; padding: 0 2rem 3rem; display: none; }
+  .wishlist-section.open { display: block; }
+  .wishlist-empty { text-align: center; padding: 3rem 1rem; color: var(--text2); }
+  .wishlist-empty div { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .wl-heart-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; line-height: 1; padding: 2px 4px;
+    transition: transform 0.2s; color: var(--accent);
+  }
+  .wl-heart-btn:hover { transform: scale(1.3); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 600px) {
+    header { padding: 0 0.75rem; }
+    nav a { display: none; }
+    .header-xp .xp-label { display: none; }
+    .header-xp .xp-track { width: 50px; }
+    .books-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .arrow-left { left: 0.5rem; } .arrow-right { right: 0.5rem; }
+    .chat-panel { width: calc(100vw - 2rem); right: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- DISCOUNT BANNER -->
+<div class="discount-banner" id="discountBanner">
+  🎉 You have a <strong>10% Discount Card</strong> active! Every purchase is cheaper today.
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    Khazar Library
+  </div>
+  <nav>
+    <a href="#" id="navHome">Home</a>
+    <a href="#">About</a>
+  </nav>
+  <!-- XP BAR -->
+  <div class="header-xp" id="headerXP">
+    <span class="xp-level-badge" id="levelBadge">Lv.1</span>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    <span class="xp-label" id="xpLabel">0 / 500 XP</span>
+  </div>
+  <button class="wl-fab" id="navWishlist" title="Wishlist" aria-label="Wishlist">
+    ♡<span class="wishlist-count" id="wishlistCount"></span>
+  </button>
+  <button class="theme-btn" id="themeBtn" title="Toggle day/night mode" aria-label="Toggle theme"></button>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <p class="hero-eyebrow">A Curated Digital Library</p>
+  <h1>Where every page<br>tells a <em>story</em></h1>
+  <p>Spin through our curated collection and find your next great read — across every genre imaginable.</p>
+
+  <!-- TYPE FILTER -->
+  <div class="type-filter" id="typeFilter">
+    <button class="type-btn active" data-type="all">All Types</button>
+    <button class="type-btn" data-type="book">📖 Book</button>
+    <button class="type-btn" data-type="manga">🎌 Manga</button>
+    <button class="type-btn" data-type="novel">✍️ Novel</button>
+    <button class="type-btn" data-type="webtoon">📱 Webtoon</button>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search books, authors, genres…" autocomplete="off" />
+    <span class="search-icon">🔍</span>
+  </div>
+  <div class="genres" id="genreTags"></div>
+</section>
+
+<!-- 3D CAROUSEL -->
+<section class="carousel-section" id="carouselSection">
+  <p class="carousel-title">— drag or click arrows to spin through featured books —</p>
+  <div style="position:relative;">
+    <div class="carousel-3d" id="carousel3d">
+      <div class="books-stage" id="booksStage"></div>
+    </div>
+    <button class="carousel-arrow arrow-left" id="prevBtn" aria-label="Previous book">&#8249;</button>
+    <button class="carousel-arrow arrow-right" id="nextBtn" aria-label="Next book">&#8250;</button>
+  </div>
+  <div class="carousel-dots" id="carouselDots"></div>
+  <div class="active-book-info" id="activeBookInfo"></div>
+  <div class="shelf-wrap"><div class="shelf-board"></div></div>
+</section>
+
+<!-- WISHLIST SECTION -->
+<section class="wishlist-section" id="wishlistSection">
+  <div class="section-header">
+    <h2 class="section-title">♥ My Wishlist</h2>
+    <span class="see-all" id="backToHome">← Back to Library</span>
+  </div>
+  <div class="books-grid" id="wishlistGrid"></div>
+  <div class="wishlist-empty" id="wishlistEmpty" style="display:none;">
+    <div>♡</div>
+    <p>Your wishlist is empty.<br>Tap the heart on any book to save it here.</p>
+  </div>
+</section>
+
+<!-- AI RECOMMENDATIONS -->
+<section class="ai-rec-section" id="aiRecSection">
+  <div class="ai-rec-header">
+    <h2>Recommended for You</h2>
+    <span class="ai-badge">✨ AI</span>
+  </div>
+  <div class="ai-rec-grid" id="aiRecGrid">
+    <div class="ai-rec-placeholder">
+      <p style="margin-bottom:0.75rem;">Get AI-powered book recommendations based on your reading history.</p>
+      <button class="ai-rec-btn" id="getRecsBtn">✨ Get Recommendations</button>
+    </div>
+  </div>
+</section>
+
+<!-- BOOK GRID -->
+<section class="grid-section" id="gridSection">
+  <div class="section-header">
+    <h2 class="section-title">All Books</h2>
+    <span class="see-all" id="clearFilter">Clear filters</span>
+  </div>
+  <div class="books-grid" id="booksGrid"></div>
+  <div class="no-results" id="noResults">No books found. Try a different search or genre.</div>
+</section>
+
+<footer>
+  <p>Khazar Library &copy; 2026 &mdash; crafted with love for readers everywhere</p>
+</footer>
+
+<!-- BOOK DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">&#x2715;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- LEVEL UP MODAL -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="levelup-box">
+    <div style="font-size:2.5rem;">🎉</div>
+    <h2 id="levelupTitle">Level Up!</h2>
+    <p id="levelupMsg">You reached a new level!</p>
+    <button class="read-btn" style="margin-top:1rem;" onclick="document.getElementById('levelupOverlay').classList.remove('show')">Awesome!</button>
+  </div>
+</div>
+
+<!-- XP TOAST -->
+<div class="xp-toast" id="xpToast"></div>
+
+<!-- CHATBOT FAB -->
+<button class="chat-fab" id="chatFab" title="Chat with AI Book Bot">💬</button>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <h4>Book Bot</h4>
+        <p>● Online</p>
+      </div>
+    </div>
+    <button class="chat-close-btn" id="chatCloseBtn">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot">Hi! I'm your AI book assistant. Ask me anything about books, genres, or what to read next! 📚</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask about books…" />
+    <button class="chat-send" id="chatSend">↑</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   BACKEND API CONFIG
+   ── Railway backend URL-ni buraya yaz ──
+═══════════════════════════════════════════ */
+const API_BASE = 'https://bookstore-api-production-7b8b.up.railway.app;
+
+/* Backend ilə əlaqə funksiyaları */
+async function apiGet(path) {
+  try {
+    const res = await fetch(API_BASE + path);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function apiPost(path, body) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const BOOKS = [
+  { id:1,  title:"The Midnight Library",   author:"Matt Haig",          genre:"Fiction",     color:"#1a5276", type:"novel",   price:12.99, desc:"Between life and death there is a library. Its shelves go on forever. Every book provides a chance to try another life you could have lived." },
+  { id:2,  title:"Dune",                   author:"Frank Herbert",       genre:"Sci-Fi",      color:"#784212", type:"book",    price:14.99, desc:"Set on the desert planet Arrakis, Dune is a sweeping epic of politics, religion, and ecology in the far future of humanity." },
+  { id:3,  title:"Sapiens",                author:"Yuval Noah Harari",   genre:"Non-Fiction", color:"#1e8449", type:"book",    price:13.99, desc:"A brief history of humankind — from the Stone Age through the agricultural and scientific revolutions, to the present day." },
+  { id:4,  title:"Pride and Prejudice",    author:"Jane Austen",         genre:"Classic",     color:"#6c3483", type:"novel",   price:7.99,  desc:"A romantic novel tracing the emotional development of Elizabeth Bennet in 19th century England. Witty, sharp, and timeless." },
+  { id:5,  title:"Atomic Habits",          author:"James Clear",         genre:"Self-Help",   color:"#b7950b", type:"book",    price:15.99, desc:"Tiny changes, remarkable results. A practical, proven framework for improving every day through the power of small habits." },
+  { id:6,  title:"The Name of the Wind",   author:"Patrick Rothfuss",    genre:"Fantasy",     color:"#117a65", type:"novel",   price:13.99, desc:"The riveting first-person narrative of Kvothe — magician, musician, and legend. A masterpiece of modern fantasy." },
+  { id:7,  title:"1984",                   author:"George Orwell",       genre:"Dystopia",    color:"#212f3d", type:"book",    price:8.99,  desc:"A haunting vision of a totalitarian future where Big Brother watches your every move and truth is whatever the Party says." },
+  { id:8,  title:"Educated",               author:"Tara Westover",       genre:"Memoir",      color:"#922b21", type:"book",    price:12.99, desc:"A memoir about a young girl who grows up isolated in the mountains of Idaho and eventually earns a PhD from Cambridge." },
+  { id:9,  title:"One Piece Vol.1",        author:"Eiichiro Oda",        genre:"Adventure",   color:"#c0392b", type:"manga",   price:9.99,  desc:"Follow Monkey D. Luffy and his crew on an adventure to find the legendary treasure One Piece and become King of the Pirates." },
+  { id:10, title:"Cosmos",                 author:"Carl Sagan",          genre:"Science",     color:"#2e4057", type:"book",    price:11.99, desc:"A personal voyage through the universe, tracing the origins of science, civilisation, and our place among the stars." },
+  { id:11, title:"Gone Girl",              author:"Gillian Flynn",        genre:"Thriller",    color:"#641e16", type:"novel",   price:11.99, desc:"When Amy Dunne disappears on her wedding anniversary, suspicion immediately falls on her charming husband Nick Dunne." },
+  { id:12, title:"The Hobbit",             author:"J.R.R. Tolkien",      genre:"Fantasy",     color:"#1e5631", type:"book",    price:10.99, desc:"A fantastic adventure of courage and unexpected heroism — Bilbo Baggins' greatest journey through Middle Earth." },
+  { id:13, title:"Tower of God",           author:"SIU",                 genre:"Fantasy",     color:"#2c3e50", type:"webtoon", price:5.99,  desc:"An epic webtoon following Twenty-Fifth Bam as he climbs an infinite tower to find his only friend, Rachel." },
+  { id:14, title:"Little Women",           author:"Louisa May Alcott",   genre:"Classic",     color:"#6e2f1a", type:"novel",   price:7.99,  desc:"The coming-of-age story of the four March sisters growing up during the Civil War, filled with warmth and quiet wisdom." },
+  { id:15, title:"Project Hail Mary",      author:"Andy Weir",           genre:"Sci-Fi",      color:"#154360", type:"book",    price:14.99, desc:"A lone astronaut wakes with no memory aboard a spacecraft millions of miles from Earth — and must save humanity." },
+  { id:16, title:"Solo Leveling",          author:"Chugong",             genre:"Action",      color:"#2c3e50", type:"webtoon", price:5.99,  desc:"In a world where hunters with magical powers battle dangerous monsters, one weakest hunter Sung Jin-Woo begins an extraordinary journey." },
+  { id:17, title:"Attack on Titan",        author:"Hajime Isayama",      genre:"Action",      color:"#4a235a", type:"manga",   price:9.99,  desc:"Humanity lives behind walls to survive the attack of the Titans — giant humanoid creatures that devour humans without reason." },
+  { id:18, title:"Omniscient Reader's Viewpoint, Vol. 1",       author:"Sing Shong", genre:"Fantasy",     color:"#002147", type:"novel",   price:19.99,  desc:"An ordinary office worker who must survive story's apocalyptic plot which suddenly becomes his new reality." },
+];
+
+const GENRES = [...new Set(BOOKS.map(b => b.genre))];
+const FEATURED = BOOKS.slice(0, 8);
+const N = FEATURED.length;
+const RADIUS = 270;
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let state = {
+  xp: 0, level: 1, purchases: 0,
+  hasDiscount: false, readingList: [],
+  purchaseHistory: []
+};
+try { const s = localStorage.getItem('khazar_library_state'); if (s) state = {...state, ...JSON.parse(s)}; } catch(e){}
+
+let currentBook = 0, activeGenre = null, activeType = 'all', dragStart = null, autoTimer = null;
+
+function saveState() { try { localStorage.setItem('khazar_library_state', JSON.stringify(state)); } catch(e){} }
+
+/* ═══════════════════════════════════════════
+   XP / LEVEL SYSTEM
+═══════════════════════════════════════════ */
+function updateXPUI() {
+  const XP_PER_LEVEL = 500;
+  const currentXP = state.xp % XP_PER_LEVEL;
+  const pct = (currentXP / XP_PER_LEVEL) * 100;
+  document.getElementById('xpFill').style.width = pct + '%';
+  document.getElementById('levelBadge').textContent = 'Lv.' + state.level;
+  document.getElementById('xpLabel').textContent = currentXP + ' / ' + XP_PER_LEVEL + ' XP';
+}
+
+function addXP(amount) {
+  const XP_PER_LEVEL = 500;
+  const oldLevel = state.level;
+  state.xp += amount;
+  state.level = Math.floor(state.xp / XP_PER_LEVEL) + 1;
+  saveState();
+  updateXPUI();
+  showToast('+' + amount + ' XP earned! ⭐');
+  if (state.level > oldLevel) showLevelUp(state.level);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('xpToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function showLevelUp(lvl) {
+  document.getElementById('levelupTitle').textContent = '🎉 Level ' + lvl + '!';
+  document.getElementById('levelupMsg').textContent = 'You reached Level ' + lvl + '! Keep reading to earn more XP.';
+  document.getElementById('levelupOverlay').classList.add('show');
+}
+
+/* DISCOUNT CARD*/
+function checkDiscount() {
+  if (state.purchases > 0 && state.purchases % 5 === 0 && !state.hasDiscount) {
+    state.hasDiscount = true;
+    saveState();
+    document.getElementById('discountBanner').classList.add('show');
+    showToast('🎁 Discount card unlocked! 10% off next purchase.');
+  }
+}
+
+function getPrice(book) {
+  if (state.hasDiscount) return (book.price * 0.9).toFixed(2);
+  return book.price.toFixed(2);
+}
+
+/*  GENRE TAGS */
+GENRES.forEach(g => {
+  const t = document.createElement('span');
+  t.className = 'genre-tag'; t.textContent = g;
+  t.addEventListener('click', () => {
+    activeGenre = activeGenre === g ? null : g;
+    document.querySelectorAll('.genre-tag').forEach(x => x.classList.toggle('active', x.textContent === activeGenre));
+    renderGrid();
+  });
+  document.getElementById('genreTags').appendChild(t);
+});
+
+/* TYPE FILTER */
+document.getElementById('typeFilter').addEventListener('click', e => {
+  if (!e.target.dataset.type) return;
+  activeType = e.target.dataset.type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === activeType));
+  renderGrid();
+});
+
+/* SEARCH */
+document.getElementById('searchInput').addEventListener('input', renderGrid);
+document.getElementById('clearFilter').addEventListener('click', () => {
+  activeGenre = null; activeType = 'all';
+  document.querySelectorAll('.genre-tag').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
+  document.getElementById('searchInput').value = '';
+  renderGrid();
+});
+
+/* GRID */
+const TYPE_ICONS = { book:'📖', manga:'🎌', novel:'✍️', webtoon:'📱' };
+function renderGrid() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const grid = document.getElementById('booksGrid');
+  const noResults = document.getElementById('noResults');
+  grid.innerHTML = '';
+  const filtered = BOOKS.filter(b => {
+    const mQ = !q || b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.genre.toLowerCase().includes(q);
+    const mG = !activeGenre || b.genre === activeGenre;
+    const mT = activeType === 'all' || b.type === activeType;
+    return mQ && mG && mT;
+  });
+  noResults.style.display = filtered.length ? 'none' : 'block';
+  filtered.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.innerHTML = `
+      <div class="book-card-cover" style="background:${b.color};">
+        <div class="bcc-title">${b.title}</div>
+        <div class="bcc-deco"></div>
+        <div class="bcc-author">${b.author}</div>
+        <div class="bcc-type">${TYPE_ICONS[b.type] || ''} ${b.type}</div>
+      </div>
+      <div class="book-card-meta">
+        <div class="book-card-name">${b.title}</div>
+        <div class="book-card-author">${b.author}</div>
+        <div class="book-card-genre">${b.genre}</div>
+      </div>`;
+    card.addEventListener('click', () => openModal(b));
+    grid.appendChild(card);
+  });
+}
+
+/*  CAROUSEL*/
+function buildCarousel() {
+  const stage = document.getElementById('booksStage');
+  stage.innerHTML = '';
+  FEATURED.forEach((b, i) => {
+    const angle = (360 / N) * i;
+    const item = document.createElement('div');
+    item.className = 'book-item';
+    item.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+    item.innerHTML = `
+      <div class="book-front" style="background:${b.color};">
+        <div class="book-title">${b.title}</div>
+        <div class="book-deco"></div>
+        <div class="book-author">${b.author}</div>
+        <div class="book-badge">${b.genre}</div>
+        <div class="book-type-tag">${TYPE_ICONS[b.type]} ${b.type}</div>
+      </div>`;
+    item.addEventListener('click', () => { goTo(i); setTimeout(() => openModal(b), 300); });
+    stage.appendChild(item);
+  });
+  const dots = document.getElementById('carouselDots');
+  dots.innerHTML = '';
+  FEATURED.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dots.appendChild(d);
+  });
+  updateCarousel();
+}
+
+function updateCarousel() {
+  document.getElementById('booksStage').style.transform = `rotateY(${-(360/N)*currentBook}deg)`;
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===currentBook));
+  const b = FEATURED[currentBook];
+  document.getElementById('activeBookInfo').innerHTML = `
+    <h3>${b.title}</h3>
+    <p class="by">by ${b.author} &mdash; <span style="color:var(--tag-text)">${b.genre}</span> &mdash; <span style="color:#667eea;font-size:0.8rem;">${TYPE_ICONS[b.type]} ${b.type}</span></p>
+    <p class="desc">${b.desc}</p>
+    <button class="read-btn" onclick="openModal(BOOKS[${b.id-1}])">View Details</button>`;
+}
+
+function goTo(i) { currentBook = ((i%N)+N)%N; updateCarousel(); }
+document.getElementById('prevBtn').addEventListener('click', () => goTo(currentBook-1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(currentBook+1));
+
+const c3d = document.getElementById('carousel3d');
+c3d.addEventListener('mousedown', e => { dragStart=e.clientX; });
+window.addEventListener('mouseup', () => { dragStart=null; });
+window.addEventListener('mousemove', e => {
+  if (dragStart===null) return;
+  const diff = e.clientX - dragStart;
+  if (Math.abs(diff)>50) { goTo(currentBook+(diff<0?1:-1)); dragStart=e.clientX; }
+});
+c3d.addEventListener('touchstart', e => { dragStart=e.touches[0].clientX; }, {passive:true});
+c3d.addEventListener('touchmove', e => {
+  if (dragStart===null) return;
+  const diff = e.touches[0].clientX - dragStart;
+  if (Math.abs(diff)>45) { goTo(currentBook+(diff<0?1:-1)); dragStart=e.touches[0].clientX; }
+}, {passive:true});
+
+function startAuto() { autoTimer = setInterval(() => goTo(currentBook+1), 3800); }
+function stopAuto() { clearInterval(autoTimer); }
+startAuto();
+c3d.addEventListener('mouseenter', stopAuto);
+c3d.addEventListener('mouseleave', startAuto);
+
+/* MODAL / DRM */
+function getUserId() {
+  let uid = localStorage.getItem('lib_uid');
+  if (!uid) { uid = 'USER-' + Math.random().toString(36).substr(2,8).toUpperCase(); localStorage.setItem('lib_uid', uid); }
+  return uid;
+}
+
+function openModal(b) {
+  const uid = getUserId();
+  const ts = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  const discountedPrice = getPrice(b);
+  const discountLine = state.hasDiscount
+    ? `<span class="price-discount">10% OFF applied</span>` : '';
+
+  document.getElementById('modalContent').innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;">
+      <div class="modal-cover" style="background:${b.color};">
+        <div style="font-family:'Playfair Display',serif;font-size:0.55rem;font-weight:700;color:#fff;text-align:center;line-height:1.3;position:relative;z-index:1;">${b.title}</div>
+      </div>
+      <div style="flex:1;">
+        <h2>${b.title}</h2>
+        <p class="modal-author">by ${b.author}</p>
+        <span class="modal-genre-pill">${b.genre}</span>
+        <span class="modal-type-pill">${TYPE_ICONS[b.type]} ${b.type}</span>
+      </div>
+    </div>
+    <p class="modal-desc">${b.desc}</p>
+
+    <!-- DRM PREVIEW -->
+    <div class="drm-reader">
+      <div class="drm-watermark">${uid} &nbsp;&nbsp; ${ts} &nbsp;&nbsp; ${uid} &nbsp;&nbsp; ${ts}</div>
+      <div class="drm-content">"${b.desc.substring(0,180)}…"<br><br>This is a protected preview. Purchase to unlock full access.</div>
+      <div class="drm-label">🔒 DRM Protected &nbsp;·&nbsp; Watermarked for ${uid} &nbsp;·&nbsp; ${ts}</div>
+    </div>
+
+    <!-- PURCHASE -->
+    <div class="purchase-area">
+      <div class="price-row">
+        <span class="price">$${discountedPrice}</span>
+        ${discountLine}
+      </div>
+      <div class="purchase-actions">
+        <button class="buy-btn" onclick="purchaseBook(${b.id})">🛒 Purchase (+100 XP)</button>
+        <button class="read-btn" id="wlBtn-${b.id}" style="background:var(--bg2);color:var(--text);" onclick="addToList(${b.id})">${state.readingList.includes(b.id) ? '♥ Wishlisted' : '♡ Wishlist'}</button>
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+window.purchaseBook = async function(id) {
+  const b = BOOKS.find(x => x.id === id);
+  if (!b) return;
+
+  // Backend-ə alış göndər
+  const userId = state.backendUserId || 1;
+  const result = await apiPost('/api/purchase', {
+    user_id: userId,
+    book_id: id,
+    type: 'buy'
+  });
+
+  // Local state yenilə (backend işləməsə belə)
+  state.purchases++;
+  state.purchaseHistory.push({ id: b.id, title: b.title, date: new Date().toISOString() });
+  if (state.hasDiscount) state.hasDiscount = false;
+  document.getElementById('discountBanner').classList.remove('show');
+  saveState();
+  addXP(100);
+  checkDiscount();
+  document.getElementById('modalOverlay').classList.remove('open');
+
+  if (result) {
+    showToast(`✅ Purchased! +${result.xp_earned || 100} XP`);
+  } else {
+    showToast('✅ Purchased! +100 XP');
+  }
+};
+
+window.addToList = function(id) {
+  const b = BOOKS.find(x => x.id === id);
+  if (!b) return;
+  const idx = state.readingList.indexOf(id);
+  if (idx === -1) {
+    state.readingList.push(id);
+    saveState();
+    showToast('♥ Added to wishlist!');
+  } else {
+    state.readingList.splice(idx, 1);
+    saveState();
+    showToast('♡ Removed from wishlist');
+  }
+  updateWishlistCount();
+  // update button text live if modal still open
+  const wlBtn = document.getElementById('wlBtn-' + id);
+  if (wlBtn) wlBtn.textContent = state.readingList.includes(id) ? '♥ Wishlisted' : '♡ Wishlist';
+  // re-render wishlist if visible
+  if (document.getElementById('wishlistSection').classList.contains('open')) renderWishlist();
+};
+
+document.getElementById('modalClose').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('open'));
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') document.getElementById('modalOverlay').classList.remove('open'); });
+
+/* AI RECOMMENDATIONS */
+document.getElementById('getRecsBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('getRecsBtn');
+  btn.disabled = true; btn.textContent = '✨ Thinking…';
+
+  const userId = state.backendUserId || 1;
+
+  try {
+    // Əvvəlcə backend-dən tövsiyə al
+    const backendResult = await apiGet('/api/recommend/' + userId);
+    if (backendResult && backendResult.recommendations) {
+      // Backend cavabını göstər
+      const grid = document.getElementById('aiRecGrid');
+      grid.innerHTML = `<div style="grid-column:1/-1;padding:1rem;color:var(--text2);font-size:0.9rem;line-height:1.6;">
+        <strong>✨ AI Recommendations:</strong><br>${backendResult.recommendations.replace(/\n/g,'<br>')}
+      </div>`;
+      grid.style.display = 'grid';
+      btn.disabled = false; btn.textContent = '↻ Refresh Recommendations';
+      return;
+    }
+  } catch(e) {}
+
+  // Backend işləməsə birbaşa Anthropic API istifadə et
+  const history = state.purchaseHistory.length
+    ? state.purchaseHistory.map(p => p.title).join(', ')
+    : 'No purchases yet';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: 'You are a book recommendation AI. Respond ONLY with valid JSON — no markdown, no backticks, no preamble. Return an array of exactly 4 objects with keys: id (integer, matching book id), reason (1 short sentence why).',
+        messages: [{ role: 'user', content: `User reading history: ${history}. Available books (id: title): ${BOOKS.map(b=>`${b.id}: ${b.title} (${b.genre})`).join(', ')}. Recommend 4 books from the list. Return JSON array only.` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(c => c.text||'').join('').replace(/```json|```/g,'').trim();
+    const recs = JSON.parse(text);
+    renderRecs(recs);
+  } catch(e) {
+    const purchased = state.purchaseHistory.map(p=>p.id);
+    const pool = BOOKS.filter(b => !purchased.includes(b.id));
+    const picks = pool.sort(()=>Math.random()-0.5).slice(0,4).map(b => ({ id: b.id, reason: 'A popular pick in ' + b.genre }));
+    renderRecs(picks);
+  }
+  btn.disabled = false; btn.textContent = '↻ Refresh Recommendations';
+});
+
+function renderRecs(recs) {
+  const grid = document.getElementById('aiRecGrid');
+  grid.innerHTML = '';
+  grid.style.display = 'grid';
+  recs.forEach(r => {
+    const b = BOOKS.find(x => x.id === r.id);
+    if (!b) return;
+    const card = document.createElement('div');
+    card.className = 'ai-rec-card';
+    card.innerHTML = `
+      <div class="ai-rec-mini" style="background:${b.color};">
+        <div style="font-size:0.45rem;color:#fff;text-align:center;font-family:'Playfair Display',serif;font-weight:700;line-height:1.2;position:relative;z-index:1;">${b.title}</div>
+      </div>
+      <div class="ai-rec-info">
+        <h4>${b.title}</h4>
+        <p>${b.author}</p>
+        <p class="ai-rec-reason">✨ ${r.reason}</p>
+      </div>`;
+    card.addEventListener('click', () => openModal(b));
+    grid.appendChild(card);
+  });
+
+  const refreshBtn = document.createElement('div');
+  refreshBtn.style.cssText = 'grid-column:1/-1;text-align:right;';
+  refreshBtn.innerHTML = `<button class="ai-rec-btn" id="getRecsBtn" style="font-size:0.75rem;padding:0.4rem 1rem;">↻ Refresh</button>`;
+  grid.appendChild(refreshBtn);
+  document.getElementById('getRecsBtn').addEventListener('click', () => document.querySelector('[id=getRecsBtn]').click());
+}
+
+/* AI CHATBOT */
+let chatHistory = [];
+const chatFab = document.getElementById('chatFab');
+const chatPanel = document.getElementById('chatPanel');
+chatFab.addEventListener('click', () => chatPanel.classList.toggle('open'));
+document.getElementById('chatCloseBtn').addEventListener('click', () => chatPanel.classList.remove('open'));
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  appendChatMsg(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+
+  const typing = appendChatMsg('Typing…', 'bot typing');
+  const userId = state.backendUserId || 1;
+
+  try {
+    // Əvvəlcə backend chatbot-u istifadə et
+    const backendRes = await apiPost('/api/chat', { user_id: userId, message: msg });
+    if (backendRes && backendRes.reply) {
+      typing.remove();
+      appendChatMsg(backendRes.reply, 'bot');
+      chatHistory.push({ role: 'assistant', content: backendRes.reply });
+      return;
+    }
+  } catch(e) {}
+
+  // Backend işləməsə birbaşa Anthropic API istifadə et
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: `You are a friendly AI book assistant for Khazar Library, a digital library. Help users discover books, discuss genres, give recommendations, and answer book-related questions. Be concise and warm. Available books: ${BOOKS.map(b=>b.title+' by '+b.author+' ('+b.genre+', '+b.type+')').join('; ')}.`,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content.map(c=>c.text||'').join('');
+    typing.remove();
+    appendChatMsg(reply, 'bot');
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    typing.remove();
+    appendChatMsg("Sorry, I'm having trouble connecting. Try again!", 'bot');
+  }
+}
+
+function appendChatMsg(text, cls) {
+  const msgs = document.getElementById('chatMessages');
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + cls;
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+document.getElementById('chatSend').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key==='Enter') sendChat(); });
+
+/* WISHLIST TAB*/
+function updateWishlistCount() {
+  const n = state.readingList.length;
+  const badge = document.getElementById('wishlistCount');
+  badge.textContent = n;
+  badge.classList.toggle('show', n > 0);
+}
+
+function renderWishlist() {
+  const grid = document.getElementById('wishlistGrid');
+  const empty = document.getElementById('wishlistEmpty');
+  grid.innerHTML = '';
+  const items = BOOKS.filter(b => state.readingList.includes(b.id));
+  if (!items.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  items.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.innerHTML = `
+      <div class="book-card-cover" style="background:${b.color}; position:relative;">
+        <button class="wl-heart-btn" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="event.stopPropagation();addToList(${b.id})">♥</button>
+        <div class="bcc-title">${b.title}</div>
+        <div class="bcc-deco"></div>
+        <div class="bcc-author">${b.author}</div>
+        <div class="bcc-type">${TYPE_ICONS[b.type]||''} ${b.type}</div>
+      </div>
+      <div class="book-card-meta">
+        <div class="book-card-name">${b.title}</div>
+        <div class="book-card-author">${b.author}</div>
+        <div class="book-card-genre">${b.genre}</div>
+      </div>`;
+    card.addEventListener('click', () => openModal(b));
+    grid.appendChild(card);
+  });
+}
+
+const mainSections = ['heroSection','carouselSection','aiRecSection','gridSection'];
+function showView(view) {
+  // view: 'home' | 'wishlist'
+  const isHome = view === 'home';
+  document.getElementById('wishlistSection').classList.toggle('open', !isHome);
+  ['heroSection','carouselSection','aiRecSection','gridSection'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isHome ? '' : 'none';
+  });
+  if (!isHome) renderWishlist();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('navWishlist').addEventListener('click', e => { e.preventDefault(); showView('wishlist'); });
+document.getElementById('navHome').addEventListener('click', e => { e.preventDefault(); showView('home'); });
+document.getElementById('backToHome').addEventListener('click', () => showView('home'));
+
+/* THEME */
+document.getElementById('themeBtn').addEventListener('click', () => {
+  document.documentElement.dataset.theme = document.documentElement.dataset.theme==='night' ? 'day' : 'night';
+});
+
+/* INIT */
+async function init() {
+  // Backend-dən kitabları yükləməyə çalış
+  const backendBooks = await apiGet('/api/books');
+  if (backendBooks && backendBooks.length > 0) {
+    // Backend kitablarını BOOKS formatına çevir
+    const COLORS = ['#1a5276','#784212','#1e8449','#6c3483','#b7950b','#117a65','#212f3d','#922b21','#c0392b','#2e4057','#641e16','#1e5631','#2c3e50','#6e2f1a','#154360','#2c3e50','#4a235a','#002147'];
+    backendBooks.forEach((b, i) => {
+      const existing = BOOKS.find(x => x.title === b.title);
+      if (!existing) {
+        BOOKS.push({
+          id: BOOKS.length + 1,
+          title: b.title,
+          author: b.author,
+          genre: b.category || 'General',
+          color: COLORS[i % COLORS.length],
+          type: b.type || 'book',
+          price: b.buy_price || 9.99,
+          desc: b.description || ''
+        });
+      }
+    });
+  }
+
+  buildCarousel();
+  renderGrid();
+  updateXPUI();
+  updateWishlistCount();
+  if (state.hasDiscount) document.getElementById('discountBanner').classList.add('show');
+}
+
+init();
+</script>
+</body>
+</html>
